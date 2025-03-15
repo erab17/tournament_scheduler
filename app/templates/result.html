@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Schedule Result</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .warning { color: red; }
+        .summary { margin-top: 20px; }
+        .suggestion { background-color: #f0f0f0; padding: 15px; margin-top: 20px; border-radius: 5px; }
+        .suggestion a { display: inline-block; margin-top: 10px; background-color: #4CAF50; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; }
+        .suggestion a:hover { background-color: #45a049; }
+        table { border-collapse: collapse; }
+        th, td { padding: 8px; text-align: left; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>Tournament Schedule</h1>
+    {% if warnings %}
+        <h3>Warnings:</h3>
+        <ul class="warning">
+        {% for warning in warnings %}
+            <li>{{ warning }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if analysis %}
+        <div class="suggestion">
+            <h3>Scheduling Problem Analysis</h3>
+            <p>The scheduler could not find a valid solution with the current constraints.</p>
+            <p>Try one of these solutions:</p>
+            <ul>
+                <li>Enable 'Allow More Matches for Some Teams' to permit extra matches</li>
+                <li>Adjust matches per team to an even total (e.g., {{ request.form['matches_per_team']|int - 1 }} or {{ request.form['matches_per_team']|int + 1 }})</li>
+                <li>Adjust concurrent matches (currently {{ request.form['concurrency'] }}, max possible {{ [request.form['concurrency']|int, (stats.total_teams if stats else 7) // 2]|min }})</li>
+                <li>Add more teams from different clubs</li>
+            </ul>
+            <a href="/">Back to Input Form</a>
+        </div>
+    {% else %}
+        {% for time, matches in schedule %}
+            <h3>{{ format_time(time) }}</h3>
+            <ul>
+            {% for (c1, t1), (c2, t2) in matches %}
+                <li>{{ t1 }} (Club {{ c1 }}) vs {{ t2 }} (Club {{ c2 }})</li>
+            {% endfor %}
+            </ul>
+            {% if loop.index % long_break_frequency == 0 %}
+                <p><strong>Longer break {{ long_break_time }} minutes</strong></p>
+            {% endif %}
+        {% endfor %}
+
+        <div class="summary">
+            <h2>Team Summary</h2>
+            <table border="1">
+                <tr>
+                    <th>Team</th>
+                    <th>Number of Matches</th>
+                    <th>Opponents</th>
+                    <th>First Match</th>
+                    <th>Last Match</th>
+                    <th>Min Time Between (min)</th>
+                    <th>Max Time Between (min)</th>
+                    <th>Median Time Between (min)</th>
+                    <th>Max Consecutive Matches</th>
+                </tr>
+                {% for team, count in team_games.items() %}
+                <tr>
+                    <td>{{ team[1] }} (Club {{ team[0] }})</td>
+                    <td>{{ count }}</td>
+                    <td>{{ team_opponents[team]|join(', ') }}</td>
+                    <td>{{ format_time(team_timing_stats[team]['first_match']) if team_timing_stats[team]['first_match'] else 'N/A' }}</td>
+                    <td>{{ format_time(team_timing_stats[team]['last_match']) if team_timing_stats[team]['last_match'] else 'N/A' }}</td>
+                    <td>{{ '%d' % team_timing_stats[team]['min_time_between'] if team_timing_stats[team]['min_time_between'] is not none else 'N/A' }}</td>
+                    <td>{{ '%d' % team_timing_stats[team]['max_time_between'] if team_timing_stats[team]['max_time_between'] is not none else 'N/A' }}</td>
+                    <td>{{ '%d' % team_timing_stats[team]['median_time_between'] if team_timing_stats[team]['median_time_between'] is not none else 'N/A' }}</td>
+                    <td>{{ team_timing_stats[team]['max_consecutive_matches'] }}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td><strong>Average (2+ matches for time, 1+ for consecutive)</strong></td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>{{ '%d' % avg_min_time if avg_min_time is not none else 'N/A' }}</td>
+                    <td>{{ '%d' % avg_max_time if avg_max_time is not none else 'N/A' }}</td>
+                    <td>{{ '%d' % avg_median_time if avg_median_time is not none else 'N/A' }}</td>
+                    <td>{{ '%d' % avg_max_consecutive if avg_max_consecutive is not none else 'N/A' }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <a href="/">Back to Input</a>
+    {% endif %}
+</body>
+</html>
