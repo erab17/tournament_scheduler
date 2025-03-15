@@ -8,5 +8,4 @@ This Flask application generates tournament schedules for ice hockey teams, ensu
 - Long breaks for ice maintenance
 - Feasibility checks and schedule suggestions
 - Restricted club matchups
-- User-friendly web interface for schedule management
 
