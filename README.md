@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Tournament Scheduler
 
 This Flask application generates tournament schedules for ice hockey teams, ensuring constraints like match concurrency, game timing, and long breaks are met. It uses OR-Tools for constraint programming to optimize the schedule.
@@ -9,13 +8,5 @@ This Flask application generates tournament schedules for ice hockey teams, ensu
 - Long breaks for ice maintenance
 - Feasibility checks and schedule suggestions
 - Restricted club matchups
+- User-friendly web interface for schedule management
 
-## Setup
-1. **Clone the Repository**:
-   ```bash
-   git clone <repository-url>
-   cd tournament_scheduler
-=======
-# tournament_scheduler
-Scheduler for tournaments
->>>>>>> a025b4ffa1e7e8acd77dffe8c5000b451be6ae08
